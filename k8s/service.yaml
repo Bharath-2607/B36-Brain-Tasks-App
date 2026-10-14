@@ -1,0 +1,14 @@
+cat > k8s/service.yaml <<'EOF'
+apiVersion: v1
+kind: Service
+metadata:
+  name: brain-tasks-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: brain-tasks-app
+  ports:
+    - port: 3000
+      targetPort: 80
+      protocol: TCP
+EOF

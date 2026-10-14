@@ -1,0 +1,18 @@
+cat > buildspec.yml <<'EOF'
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+  build:
+    commands:
+      - docker build -t "$DOCKERHUB_USERNAME/brain-tasks-app:$CODEBUILD_RESOLVED_SOURCE_VERSION" .
+      - docker tag "$DOCKERHUB_USERNAME/brain-tasks-app:$CODEBUILD_RESOLVED_SOURCE_VERSION" "$DOCKERHUB_USERNAME/brain-tasks-app:latest"
+
+  post_build:
+    commands:
+      - docker push "$DOCKERHUB_USERNAME/brain-tasks-app:$CODEBUILD_RESOLVED_SOURCE_VERSION"
+      - docker push "$DOCKERHUB_USERNAME/brain-tasks-app:latest"
+EOF
