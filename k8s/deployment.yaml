@@ -1,8 +1,9 @@
-cat > k8s/deployment.yaml <<'EOF'
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: brain-tasks-app
+  labels:
+    app: brain-tasks-app
 spec:
   replicas: 2
   selector:
@@ -26,9 +27,8 @@ spec:
             periodSeconds: 10
           resources:
             requests:
-              cpu: "100m"
-              memory: "64Mi"
+              cpu: 50m
+              memory: 64Mi
             limits:
-              cpu: "500m"
-              memory: "256Mi"
-EOF
+              cpu: 200m
+              memory: 128Mi
