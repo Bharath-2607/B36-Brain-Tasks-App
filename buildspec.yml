@@ -2,17 +2,25 @@ cat > buildspec.yml <<'EOF'
 version: 0.2
 
 phases:
+  install:
+    commands:
+      - curl -sLO "https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl"
+      - chmod +x kubectl && mv kubectl /usr/local/bin/kubectl
   pre_build:
     commands:
       - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-
+      - IMAGE_TAG=$(echo "$CODEBUILD_RESOLVED_SOURCE_VERSION" | cut -c1-7)
+      - aws eks update-kubeconfig --name brain-tasks-cluster --region ap-south-1
   build:
     commands:
-      - docker build -t "$DOCKERHUB_USERNAME/brain-tasks-app:$CODEBUILD_RESOLVED_SOURCE_VERSION" .
-      - docker tag "$DOCKERHUB_USERNAME/brain-tasks-app:$CODEBUILD_RESOLVED_SOURCE_VERSION" "$DOCKERHUB_USERNAME/brain-tasks-app:latest"
-
+      - docker build -t "$DOCKERHUB_USERNAME/brain-tasks-app:$IMAGE_TAG" .
+      - docker tag "$DOCKERHUB_USERNAME/brain-tasks-app:$IMAGE_TAG" "$DOCKERHUB_USERNAME/brain-tasks-app:latest"
   post_build:
     commands:
-      - docker push "$DOCKERHUB_USERNAME/brain-tasks-app:$CODEBUILD_RESOLVED_SOURCE_VERSION"
+      - docker push "$DOCKERHUB_USERNAME/brain-tasks-app:$IMAGE_TAG"
       - docker push "$DOCKERHUB_USERNAME/brain-tasks-app:latest"
+      - sed -i "s|image: .*|image: $DOCKERHUB_USERNAME/brain-tasks-app:$IMAGE_TAG|" k8s/deployment.yaml
+      - kubectl apply -f k8s/
+      - kubectl rollout status deployment/brain-tasks-app --timeout=180s
+      - kubectl get pods,svc
 EOF
