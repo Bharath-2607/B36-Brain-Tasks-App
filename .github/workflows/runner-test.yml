@@ -1,32 +1,15 @@
-
-name: Self-Hosted Runner Test
-
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
-
-jobs:
-  test-runner:
-    runs-on: self-hosted
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Check Windows
-        shell: pwsh
+        shell: powershell
         run: |
           Write-Host "Windows Runner is working"
 
       - name: Check Docker
-        shell: pwsh
+        shell: powershell
         run: |
           docker version
 
       - name: Check Kubernetes
-        shell: pwsh
+        shell: powershell
         run: |
           kubectl get nodes
           kubectl get pods
